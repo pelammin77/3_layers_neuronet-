@@ -12,8 +12,9 @@ class Neural_network():
         constructor
         """
         random.seed(1)  # antaa ainna samat numerot kun ohjelma käy
-        self.synaptic_weights = 2 * random.random((3, 1)) - 1  # luo neutronin jolla on
-        # kolme inputtia ja antaa yhden(1) outputi
+        self.synaptic_weights1 = 2 * random.random((3, 12)) - 1  # luo neutronin jolla on
+        self.synaptic_weights2 = 2 * random.random((12, 13)) - 1
+        self.synaptic_weights3 = 2 * random.random((13, 1)) - 1
 #-----------------------------------------------------------------------------------------------------------
     def __sigmoid(self, x):
         """
@@ -46,7 +47,7 @@ class Neural_network():
             #print("error:", error)
             adjustment = dot(training_inputs.T, error * self.__sigmoid_derivative(output))
             # Adjust the weights.
-            self.synaptic_weights += adjustment
+            self.synaptic_weights1 += adjustment
   #---------------------------------------------------------------------------------------------
     def think(self, inputs):
         """
@@ -57,7 +58,7 @@ class Neural_network():
         pass the data (inputs) through  the network
         single neutron
         """
-        return self.__sigmoid(dot(inputs, self.synaptic_weights))
+        return self.__sigmoid(dot(inputs, self.synaptic_weights1))
 #-------------------------------------------------------------------------------------------------------
 """
 main function 
@@ -66,7 +67,7 @@ main function
 if __name__ == "__main__":
     nn = Neural_network()
     print("random start weights")
-    print(nn.synaptic_weights)
+    print(nn.synaptic_weights1)
     training_data_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
     training_data_outputs = array([[0, 1, 1, 0]]).T
     print("Training data inputs:")
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     print(training_data_outputs)
     nn.train(training_data_inputs, training_data_outputs, 10000)
     print("New weights after training: ")
-    print(nn.synaptic_weights)
+    print(nn.synaptic_weights1)
 
     # Test the neural network with a new input
     print ("Trying new input data [1, 0, 0 ] -> ?: ( output should be close 1")
