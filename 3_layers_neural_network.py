@@ -12,9 +12,12 @@ class Neural_network():
         constructor
         """
         random.seed(1)  # antaa ainna samat numerot kun ohjelma käy
-        self.synaptic_weights1 = 2 * random.random((3, 12)) - 1  # luo neutronin jolla on
-        self.synaptic_weights2 = 2 * random.random((12, 13)) - 1
-        self.synaptic_weights3 = 2 * random.random((13, 1)) - 1
+        num_peers_2_layer = 5
+        num_peers_3_layer = 4
+
+        self.synaptic_weights1 = 2 * random.random((3, num_peers_2_layer)) - 1  # create neutron first layer
+        self.synaptic_weights2 = 2 * random.random((num_peers_2_layer, num_peers_3_layer)) - 1
+        self.synaptic_weights3 = 2 * random.random((num_peers_3_layer, 1)) - 1
 #-----------------------------------------------------------------------------------------------------------
     def __sigmoid(self, x):
         """
@@ -35,30 +38,49 @@ class Neural_network():
         return x * (1 - x)
 #----------------------------------------------------------------------------------
     def train(self, training_inputs, training_outputs, num_of_training_iterations):
-        """
-        trains network
-        :param training_inputs:
-        :param training_outputs:
-        :param num_of_training_iterations:
-        """
         for iteration in range(num_of_training_iterations):
-            output = self.think(training_inputs)
-            error = training_outputs - output
-            #print("error:", error)
-            adjustment = dot(training_inputs.T, error * self.__sigmoid_derivative(output))
-            # Adjust the weights.
-            self.synaptic_weights1 += adjustment
+            # pass training set through our neural network
+            # a2 means the activations fed to second layer
+            a2 = self.__sigmoid(dot(training_inputs, self.synaptic_weights1))
+            a3 = self.__sigmoid(dot(a2, self.synaptic_weights2))
+            output = self.__sigmoid(dot(a3, self.synaptic_weights3))
+
+            # calculate 'error'
+            d4 = (training_outputs - output) * self.__sigmoid_derivative(output)
+
+
+            d3 = dot(self.synaptic_weights3, d4.T) * (self.__sigmoid_derivative(a3).T)
+            d2 = dot(self.synaptic_weights2, d3) * (self.__sigmoid_derivative(a2).T)
+
+            # get adjustments (gradients) for each layer
+            adjustment3 = dot(a3.T, d4)
+            adjustment2 = dot(a2.T, d3.T)
+            adjustment1 = dot(training_inputs.T, d2.T)
+
+            # adjust weights accordingly
+            self.synaptic_weights1 += adjustment1
+            self.synaptic_weights2 += adjustment2
+            self.synaptic_weights3 += adjustment3
+
+
+
+
   #---------------------------------------------------------------------------------------------
     def think(self, inputs):
         """
-        network "thinks"
-        network thinks
+
         :param inputs:
-        :return: sigmoid function
-        pass the data (inputs) through  the network
-        single neutron
-        """
-        return self.__sigmoid(dot(inputs, self.synaptic_weights1))
+        :return: output
+        take outputs
+        pass inputs to next layer
+        returns output
+         """
+        a2 = self.__sigmoid(dot(inputs, self.synaptic_weights1))
+        a3 = self.__sigmoid(dot(a2, self.synaptic_weights2))
+        output = self.__sigmoid(dot(a3, self.synaptic_weights3))
+        return output
+
+
 #-------------------------------------------------------------------------------------------------------
 """
 main function 
@@ -80,4 +102,4 @@ if __name__ == "__main__":
 
     # Test the neural network with a new input
     print ("Trying new input data [1, 0, 0 ] -> ?: ( output should be close 1")
-    print("result:",nn.think(array([1, 0, 0]))) #output: 0.99993704
+    print("result:",nn.think(array([1, 0, 0]))) #output: 0.99650838
